@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Der Große Dreisatz-Meister</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --danger: #c0392b;
+            --bg: #f4f7f6;
+            --card: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--primary);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 { margin-bottom: 10px; }
+        
+        .game-container {
+            background: var(--card);
+            width: 100%;
+            max-width: 1000px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header & Stats */
+        .header-bar {
+            background: var(--primary);
+            color: white;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .stats { font-size: 1.1em; font-weight: bold; }
+        .progress-bar {
+            height: 5px;
+            background: rgba(255,255,255,0.2);
+            margin-top: 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--success);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Question Area */
+        .question-area {
+            padding: 25px;
+            border-bottom: 1px solid #eee;
+            font-size: 1.1em;
+            line-height: 1.5;
+        }
+
+        /* Workspace (The Columns) */
+        .workspace {
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-end; /* Align bottom so X lines up */
+            gap: 20px;
+            background-color: #fafafa;
+            min-height: 200px;
+        }
+
+        .column-group {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .arrow-control {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin-right: 10px;
+            cursor: pointer;
+            width: 40px;
+            height: 80px;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+        .arrow-control:hover { background-color: #f0f0f0; }
+        
+        .arrow-icon {
+            font-size: 40px;
+            line-height: 40px;
+            text-align: center;
+            color: #ccc; /* Inactive color */
+            user-select: none;
+        }
+        
+        /* Active States */
+        .arrow-control.up .arrow-up { color: var(--accent); }
+        .arrow-control.down .arrow-down { color: var(--accent); }
+
+        .values-col {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 70px;
+            font-size: 18px;
+            font-weight: 500;
+        }
+        .val-item { padding: 2px 8px; border-radius: 12px; border: 2px solid transparent; transition: all 0.2s; }
+        
+        /* The Red Circle Logic */
+        .circled { border-color: var(--danger); color: var(--danger); font-weight: bold; }
+
+        .target-col .val-item.x-val { color: var(--danger); font-weight: bold; }
+        
+        .equals-sign { font-size: 30px; color: #ccc; margin-bottom: 25px; }
+
+        /* Calculation Area (Bruchstrich) */
+        .calc-area {
+            padding: 20px;
+            background: #eef2f3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-top: 1px solid #ddd;
+        }
+        .formula-display {
+            font-family: 'Times New Roman', serif;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .fraction {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 10px;
+        }
+        .numerator { border-bottom: 2px solid black; padding: 0 5px 2px 5px; text-align: center; }
+        .denominator { padding: 2px 5px 0 5px; text-align: center; }
+        
+        .input-area {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        input[type="number"] {
+            padding: 10px;
+            font-size: 18px;
+            width: 120px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+        button.check-btn {
+            padding: 10px 20px;
+            font-size: 18px;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        button.check-btn:hover { transform: scale(1.05); }
+        
+        .feedback-msg {
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 1.2em;
+            min-height: 1.5em;
+        }
+
+        /* Result Screen */
+        .final-screen {
+            display: none;
+            text-align: center;
+            padding: 50px;
+        }
+        .final-score { font-size: 3em; color: var(--accent); }
+        .final-level { font-size: 2em; margin-top: 10px; color: var(--primary); }
+        .restart-btn {
+            margin-top: 30px;
+            padding: 15px 30px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>Der Große Dreisatz-Meister</h1>
+
+    <div class="game-container" id="gameUI">
+        <div class="header-bar">
+            <div>Aufgabe <span id="currentQ">1</span> / <span id="totalQ">30</span></div>
+            <div class="stats">Punkte: <span id="score">0</span></div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+
+        <div class="question-area" id="questionText">
+            Lade Fragen...
+        </div>
+
+        <div class="workspace" id="workspace">
+            </div>
+
+        <div class="calc-area">
+            <div class="formula-display" id="formulaDisplay">
+                X = <span class="fraction"><span class="numerator">...</span><span class="denominator">...</span></span>
+            </div>
+            
+            <div class="input-area">
+                <span>Ergebnis:</span>
+                <input type="number" id="userAnswer" placeholder="123.45" step="0.01">
+                <button class="check-btn" onclick="checkAnswer()">Prüfen</button>
+                <button class="check-btn" id="nextBtn" onclick="nextQuestion()" style="display:none; background-color: var(--accent);">Nächste &rarr;</button>
+            </div>
+            <div class="feedback-msg" id="feedback"></div>
+        </div>
+    </div>
+
+    <div class="game-container final-screen" id="finalScreen">
+        <h2>Training Abgeschlossen!</h2>
+        <div>Dein Endergebnis:</div>
+        <div class="final-score" id="finalScoreDisplay">0</div>
+        <div class="final-level" id="finalLevelDisplay">Anfänger</div>
+        <button class="restart-btn" onclick="location.reload()">Nochmal spielen</button>
+    </div>
+
+<script>
+    // --- Data: Exercises ---
+    // Types: 1 = simple (2 cols), 2 = vielsatz (multi cols)
+    // Arrows: 1 = Up (Direct), -1 = Down (Inverse)
+    // Logic: Arrow Up -> Top Circled. Arrow Down -> Bottom Circled.
+    const exercises = [
+        // --- Dreisatz ---
+        {
+            id: 1, text: "20 Maurer erledigen einen Auftrag in 12,5 Tagen. Wie viele Maurer müssen zusätzlich eingestellt werden, wenn die Arbeit in 10 Tagen fertig sein soll?",
+            cols: [{top: 12.5, bot: 10, unit: "d", arrow: -1}], 
+            target: {top: 20, unit: "Maurer"},
+            result: 25, offset: 20, isOffset: true, offsetMsg: "Differenz: 25 - 20 = 5"
+        },
+        {
+            id: 2, text: "Wir beziehen 64,8 kg Rehfleisch zum Preis von 524,50 € und verkaufen 16,2 kg weiter. Welchen Betrag muss der Käufer zahlen?",
+            cols: [{top: 64.8, bot: 16.2, unit: "kg", arrow: 1}], 
+            target: {top: 524.50, unit: "€"},
+            result: 131.13
+        },
+        {
+            id: 3, text: "Gemeinschaftswerbung von 12 Geschäften kostet 1.680 € pro Geschäft. Welchen Anteil trägt jedes Geschäft, wenn sich nur 8 beteiligen?",
+            cols: [{top: 12, bot: 8, unit: "Gesch.", arrow: -1}], 
+            target: {top: 1680, unit: "€"},
+            result: 2520
+        },
+        {
+            id: 4, text: "65 Kisten werden zu 5.664 € versichert. 34 Kisten werden zerstört. Wie viel € muss die Versicherung zahlen?",
+            cols: [{top: 65, bot: 34, unit: "Kisten", arrow: 1}], 
+            target: {top: 5664, unit: "€"},
+            result: 2962.71
+        },
+        {
+            id: 5, text: "6 Angestellte brauchen 12 Tage. Wie viele Tage bräuchte man, wenn 2 weitere (insg. 8) beschäftigt würden?",
+            cols: [{top: 6, bot: 8, unit: "Ang.", arrow: -1}], 
+            target: {top: 12, unit: "Tage"},
+            result: 9
+        },
+        {
+            id: 6, text: "163,8 m² kosten 8.650 €. Was kosten zwei weitere Räume mit zusammen 106,3 m²?",
+            cols: [{top: 163.8, bot: 106.3, unit: "m²", arrow: 1}], 
+            target: {top: 8650, unit: "€"},
+            result: 5613.52
+        },
+        {
+            id: 7, text: "Geld reicht bei 35 € Ausgaben für 31 Tage. Wie lange reicht es bei 28 €?",
+            cols: [{top: 35, bot: 28, unit: "€", arrow: -1}], 
+            target: {top: 31, unit: "Tage"},
+            result: 38.75
+        },
+        {
+            id: 8, text: "45 € Sparen dauert 20 Monate. Wie viel Monate dauert es bei 60 €?",
+            cols: [{top: 45, bot: 60, unit: "€", arrow: -1}], 
+            target: {top: 20, unit: "Mon."},
+            result: 15, offset: 20, isOffset: true, offsetMsg: "Verkürzung: 20 - 15 = 5 Monate"
+        },
+        {
+            id: 9, text: "Ein 2,20 m Träger wiegt 134,86 kg. Wie viel wiegt einer mit 4,75 m?",
+            cols: [{top: 2.20, bot: 4.75, unit: "m", arrow: 1}], 
+            target: {top: 134.86, unit: "kg"},
+            result: 291.18
+        },
+        {
+            id: 10, text: "450 km verbrauchen 36 Liter. Wie viel verbrauchen 100 km?",
+            cols: [{top: 450, bot: 100, unit: "km", arrow: 1}], 
+            target: {top: 36, unit: "Liter"},
+            result: 8
+        },
+        {
+            id: 11, text: "6 Zimmerer brauchen 15 Stunden. Wie lange brauchen 4 Zimmerer?",
+            cols: [{top: 6, bot: 4, unit: "Zim.", arrow: -1}], 
+            target: {top: 15, unit: "h"},
+            result: 22.5
+        },
+        {
+            id: 12, text: "13 Steigungen haben 17,5 cm Höhe. Welche Höhe bei 14 Steigungen (gleiche Gesamthöhe)?",
+            cols: [{top: 13, bot: 14, unit: "Stg.", arrow: -1}], 
+            target: {top: 17.5, unit: "cm"},
+            result: 16.25
+        },
+        {
+            id: 13, text: "8.000 kg Pellets brauchen 25 Min. Wie lange für 12.000 kg?",
+            cols: [{top: 8000, bot: 12000, unit: "kg", arrow: 1}], 
+            target: {top: 25, unit: "min"},
+            result: 37.5
+        },
+        {
+            id: 14, text: "243,60 € entsprechen 140 m³. Wie viel m³ sind 377,58 €?",
+            cols: [{top: 243.60, bot: 377.58, unit: "€", arrow: 1}], 
+            target: {top: 140, unit: "m³"},
+            result: 217
+        },
+
+        // --- Vielsatz ---
+        {
+            id: 15, text: "10 LKW (je 6 m³) brauchen 12 Tage. Wie viel Tage brauchen 12 LKW (je 4 m³)?",
+            cols: [
+                {top: 10, bot: 12, unit: "LKW", arrow: -1}, // Mehr LKW -> Weniger Zeit
+                {top: 6, bot: 4, unit: "m³", arrow: -1}     // Weniger Volumen -> Mehr Fahrten -> Mehr Zeit (Inverse relation to capacity per trip for TOTAL time? No wait. Small truck = more trips = more days. So Less m3 -> More Days. Inverse. Correct.)
+            ], 
+            target: {top: 12, unit: "Tage"},
+            result: 15
+        },
+        {
+            id: 16, text: "4.500 € in 9 Mon. bringen 135 €. Wie viel Zinsen bringen 5.300 € in 7 Mon.?",
+            cols: [
+                {top: 4500, bot: 5300, unit: "€", arrow: 1},
+                {top: 9, bot: 7, unit: "Mon.", arrow: 1}
+            ], 
+            target: {top: 135, unit: "€"},
+            result: 123.67
+        },
+        {
+            id: 17, text: "75 m Stoff (85 cm breit) brauchen 145 kg Wolle. Wie viel für 92 m (95 cm breit)?",
+            cols: [
+                {top: 75, bot: 92, unit: "m", arrow: 1},
+                {top: 85, bot: 95, unit: "cm", arrow: 1}
+            ], 
+            target: {top: 145, unit: "kg"},
+            result: 199 // Rounded
+        },
+        {
+            id: 18, text: "3 m x 0,75 m Platte wiegt 450 kg. Wie schwer ist 1,5 m x 1,5 m?",
+            cols: [
+                {top: 3, bot: 1.5, unit: "m(L)", arrow: 1},
+                {top: 0.75, bot: 1.5, unit: "m(B)", arrow: 1}
+            ], 
+            target: {top: 450, unit: "kg"},
+            result: 450
+        },
+        {
+            id: 19, text: "18 Näherinnen, 9 Tage, 8h/Tag. Neu: 24 Näherinnen, 6 Tage. Wie viel h/Tag?",
+            cols: [
+                {top: 18, bot: 24, unit: "Näh.", arrow: -1},
+                {top: 9, bot: 6, unit: "Tage", arrow: -1}
+            ], 
+            target: {top: 8, unit: "h"},
+            result: 9
+        },
+        {
+            id: 20, text: "75 Liter (98%) kosten 900 €. Kosten für 60 Liter (80%)?",
+            cols: [
+                {top: 75, bot: 60, unit: "Lit.", arrow: 1},
+                {top: 98, bot: 80, unit: "%", arrow: 1}
+            ], 
+            target: {top: 900, unit: "€"},
+            result: 587.76
+        },
+        {
+            id: 21, text: "17 Packer, 39h, 36.000 Pakete. Neu: 34h, 37.500 Pakete, 110% Leistung. Wie viele Packer?",
+            cols: [
+                {top: 39, bot: 34, unit: "h", arrow: -1}, // Less time -> More people
+                {top: 36000, bot: 37500, unit: "Pak.", arrow: 1}, // More packs -> More people
+                {top: 100, bot: 110, unit: "%", arrow: -1} // More efficiency -> Less people
+            ], 
+            target: {top: 17, unit: "Pack."},
+            result: 19, offset: 17, isOffset: true, offsetMsg: "Zusätzlich: 19 - 17 = 2"
+        },
+        {
+            id: 22, text: "4 Masch. für 12.000 Stk in 3h. Zeit für 5 Masch. und 9.000 Stk?",
+            cols: [
+                {top: 4, bot: 5, unit: "Masch.", arrow: -1},
+                {top: 12000, bot: 9000, unit: "Stk.", arrow: 1}
+            ], 
+            target: {top: 3, unit: "h"},
+            result: 1.8
+        },
+        {
+            id: 23, text: "Pumpe: 12h, 15.000m³, 1.200 PS. Neu: 8h, 12.000m³. PS?",
+            cols: [
+                {top: 12, bot: 8, unit: "h", arrow: -1}, // Less time -> More Power
+                {top: 15000, bot: 12000, unit: "m³", arrow: 1} // Less water -> Less Power
+            ], 
+            target: {top: 1200, unit: "PS"},
+            result: 1440
+        },
+        {
+            id: 24, text: "5 Schweißer, 480 Stk, 100% Leistung, 8h. Neu: 3 Schw., 340 Stk, 95%. Zeit?",
+            cols: [
+                {top: 5, bot: 3, unit: "Schw.", arrow: -1},
+                {top: 480, bot: 340, unit: "Stk", arrow: 1},
+                {top: 100, bot: 95, unit: "%", arrow: -1}
+            ], 
+            target: {top: 8, unit: "h"},
+            result: 9.94
+        },
+        {
+            id: 25, text: "2 Pumpen, 1500L, 8h. Neu: 5 Pumpen, 2500L. Zeit?",
+            cols: [
+                {top: 2, bot: 5, unit: "P.", arrow: -1},
+                {top: 1500, bot: 2500, unit: "L", arrow: 1}
+            ], 
+            target: {top: 8, unit: "h"},
+            result: 5.33
+        },
+        {
+            id: 26, text: "60.000 Bleche (6 Masch, 6 Tage, 8h). Neu: 8 Masch, 5 Tage, 9h. Menge?",
+            cols: [
+                {top: 6, bot: 8, unit: "Masch.", arrow: 1},
+                {top: 6, bot: 5, unit: "Tage", arrow: 1},
+                {top: 8, bot: 9, unit: "h", arrow: 1}
+            ], 
+            target: {top: 60000, unit: "Stk"},
+            result: 75000
+        },
+        {
+            id: 27, text: "5 Bagger, 337.5m³, 12h. Neu: 633.75m³, 10h. Wie viele Bagger?",
+            cols: [
+                {top: 337.5, bot: 633.75, unit: "m³", arrow: 1},
+                {top: 12, bot: 10, unit: "h", arrow: -1}
+            ], 
+            target: {top: 5, unit: "Bag."},
+            result: 12, offset: 5, isOffset: true, offsetMsg: "Zusätzlich: 12 - 5 = 7"
+        },
+        {
+            id: 28, text: "7,5 kg Wolle für 114m². Wie viel für 204m²?",
+            cols: [
+                {top: 114, bot: 204, unit: "m²", arrow: 1}
+            ], 
+            target: {top: 7.5, unit: "kg"},
+            result: 13.5
+        },
+        {
+            id: 29, text: "328.458 € Lohn (72 Arb, 6 Wo, 8h, 15.84€). Neu: 80 Arb, 4 Wo, 6h, 16.20€. Lohn?",
+            cols: [
+                {top: 72, bot: 80, unit: "Arb.", arrow: 1},
+                {top: 6, bot: 4, unit: "Wo.", arrow: 1},
+                {top: 8, bot: 6, unit: "h", arrow: 1},
+                {top: 15.84, bot: 16.20, unit: "€/h", arrow: 1}
+            ], 
+            target: {top: 328458.24, unit: "€"},
+            result: 186647.47
+        },
+        {
+            id: 30, text: "15 Monteure, 25%, 16 Tage. Neu: 75%, 20 Tage. Monteure?",
+            cols: [
+                {top: 25, bot: 75, unit: "%", arrow: 1},
+                {top: 16, bot: 20, unit: "Tage", arrow: -1}
+            ], 
+            target: {top: 15, unit: "Mont."},
+            result: 36, offset: 15, isOffset: true, offsetMsg: "Zusätzlich: 36 - 15 = 21"
+        },
+        {
+            id: 31, text: "Becken füllen: 1 Vol, 4 Ltg, 140 l/m, 8h. Neu: 0.5 Vol, 3 Ltg, 90 l/m. Zeit?",
+            cols: [
+                {top: 1, bot: 0.5, unit: "Vol", arrow: 1},
+                {top: 4, bot: 3, unit: "Ltg", arrow: -1},
+                {top: 140, bot: 90, unit: "l/m", arrow: -1}
+            ], 
+            target: {top: 8, unit: "h"},
+            result: 8.30
+        },
+        {
+            id: 32, text: "Reststrecke: 32 Arb, 11d, 8h -> 842m. Neu: 42 Arb, 10d, 9h. Strecke?",
+            cols: [
+                {top: 32, bot: 42, unit: "Arb.", arrow: 1},
+                {top: 11, bot: 10, unit: "d", arrow: 1},
+                {top: 8, bot: 9, unit: "h", arrow: 1}
+            ], 
+            target: {top: 842, unit: "m"},
+            result: 1130.24
+        }
+    ];
+
+    // --- State ---
+    let currentIdx = 0;
+    let score = 0;
+    let userSelections = []; // Stores 1 or -1 for each column
+
+    // --- Init ---
+    const totalQ = exercises.length;
+    document.getElementById('totalQ').innerText = totalQ;
+    loadQuestion(currentIdx);
+
+    // --- Functions ---
+    function loadQuestion(idx) {
+        const ex = exercises[idx];
+        document.getElementById('currentQ').innerText = idx + 1;
+        document.getElementById('questionText').innerText = ex.text;
+        document.getElementById('feedback').innerText = "";
+        document.getElementById('feedback').className = "feedback-msg";
+        document.getElementById('nextBtn').style.display = "none";
+        document.getElementById('userAnswer').value = "";
+        document.getElementById('userAnswer').disabled = false;
+        
+        // Setup Workspace
+        const ws = document.getElementById('workspace');
+        ws.innerHTML = '';
+        userSelections = new Array(ex.cols.length).fill(0); // 0 = not selected
+
+        // 1. Render Variable Columns
+        ex.cols.forEach((col, colIndex) => {
+            const grp = document.createElement('div');
+            grp.className = 'column-group';
+            
+            // Arrow controls
+            const ctrl = document.createElement('div');
+            ctrl.className = 'arrow-control';
+            ctrl.innerHTML = `<div class="arrow-icon arrow-up">&#8593;</div><div class="arrow-icon arrow-down">&#8595;</div>`;
+            ctrl.onclick = () => toggleArrow(colIndex, ctrl, col);
+            
+            // Values
+            const vals = document.createElement('div');
+            vals.className = 'values-col';
+            vals.innerHTML = `<div id="v_top_${colIndex}" class="val-item">${col.top} ${col.unit}</div>
+                              <div id="v_bot_${colIndex}" class="val-item">${col.bot} ${col.unit}</div>`;
+            
+            grp.appendChild(ctrl);
+            grp.appendChild(vals);
+            ws.appendChild(grp);
+        });
+
+        // 2. Render Equals sign
+        const eq = document.createElement('div');
+        eq.className = 'equals-sign';
+        eq.innerHTML = '=';
+        ws.appendChild(eq);
+
+        // 3. Render Target Column
+        const grpT = document.createElement('div');
+        grpT.className = 'column-group target-col';
+        grpT.style.borderStyle = "solid";
+        grpT.style.borderColor = "#ddd";
+        
+        const valsT = document.createElement('div');
+        valsT.className = 'values-col';
+        // X is always bottom in our logic display for target, or matches pattern
+        valsT.innerHTML = `<div class="val-item">${ex.target.top} ${ex.target.unit}</div>
+                           <div class="val-item x-val">X ${ex.target.unit}</div>`;
+        
+        grpT.appendChild(valsT);
+        ws.appendChild(grpT);
+
+        updateFormula();
+    }
+
+    function toggleArrow(colIndex, ctrl, colData) {
+        // Toggle 0 -> 1 -> -1 -> 1
+        if (userSelections[colIndex] === 0 || userSelections[colIndex] === -1) {
+            userSelections[colIndex] = 1; // UP
+            ctrl.className = 'arrow-control up';
+        } else {
+            userSelections[colIndex] = -1; // DOWN
+            ctrl.className = 'arrow-control down';
+        }
+        updateVisuals(colIndex, colData);
+        updateFormula();
+    }
+
+    function updateVisuals(colIndex, colData) {
+        const topEl = document.getElementById(`v_top_${colIndex}`);
+        const botEl = document.getElementById(`v_bot_${colIndex}`);
+        
+        // Reset circles
+        topEl.classList.remove('circled');
+        botEl.classList.remove('circled');
+
+        // Logic from PDF:
+        // Arrow UP (1) -> Direct -> Top number Circled (goes to Denom)
+        // Arrow DOWN (-1) -> Inverse -> Bottom number Circled (goes to Denom)
+        if (userSelections[colIndex] === 1) {
+            topEl.classList.add('circled');
+        } else if (userSelections[colIndex] === -1) {
+            botEl.classList.add('circled');
+        }
+    }
+
+    function updateFormula() {
+        const ex = exercises[currentIdx];
+        let numStr = `${ex.target.top}`; // Target value always in numerator
+        let denStr = "";
+
+        // Iterate user selections to build fraction
+        ex.cols.forEach((col, idx) => {
+            const sel = userSelections[idx];
+            if (sel === 0) {
+                numStr += ` · ?`;
+                denStr += `? · `;
+            } else if (sel === 1) { // Up -> Top Circled (Denom), Bot (Num)
+                numStr += ` · ${col.bot}`;
+                denStr += `${col.top} · `;
+            } else { // Down -> Bot Circled (Denom), Top (Num)
+                numStr += ` · ${col.top}`;
+                denStr += `${col.bot} · `;
+            }
+        });
+
+        // Clean up trailing dots
+        if (denStr.endsWith(' · ')) denStr = denStr.slice(0, -3);
+        if (denStr === "") denStr = "1";
+
+        const html = `X = <span class="fraction"><span class="numerator">${numStr}</span><span class="denominator">${denStr}</span></span>`;
+        document.getElementById('formulaDisplay').innerHTML = html;
+    }
+
+    function checkAnswer() {
+        const ex = exercises[currentIdx];
+        const userVal = parseFloat(document.getElementById('userAnswer').value);
+        const fb = document.getElementById('feedback');
+        
+        // 1. Check Arrows
+        let allArrowsCorrect = true;
+        ex.cols.forEach((col, idx) => {
+            if (userSelections[idx] !== col.arrow) allArrowsCorrect = false;
+        });
+
+        // 2. Check Math (allow 1% tolerance)
+        let mathCorrect = false;
+        let correctRes = ex.result;
+        
+        // If it's an offset question (e.g. "how many MORE"), calculate that
+        let displayRes = correctRes;
+        if (ex.isOffset) {
+             // Logic: The math usually gives the total X. The answer needs X - Offset or similar.
+             // Actually, the PDF formula calculates the TOTAL X. Then the user subtracts.
+             // My `result` in data is the FINAL answer. 
+             // Let's check against that.
+        }
+
+        if (!isNaN(userVal) && Math.abs(userVal - correctRes) < (correctRes * 0.01) || Math.abs(userVal - correctRes) < 0.1) {
+            mathCorrect = true;
+        }
+
+        // Logic
+        if (allArrowsCorrect && mathCorrect) {
+            fb.innerText = "Perfekt! Pfeile und Ergebnis sind korrekt.";
+            fb.style.color = "var(--success)";
+            score += 10;
+            if (ex.isOffset) fb.innerText += " " + ex.offsetMsg;
+        } else if (allArrowsCorrect && !mathCorrect) {
+            fb.innerText = `Pfeile korrekt, aber Ergebnis falsch. Richtig wäre ca. ${correctRes}`;
+            fb.style.color = "orange";
+            score += 5;
+        } else if (!allArrowsCorrect && mathCorrect) {
+            fb.innerText = "Ergebnis stimmt (zufällig?), aber die Pfeil-Logik war falsch.";
+            fb.style.color = "orange";
+            score += 2;
+        } else {
+            fb.innerText = `Leider falsch. Richtig wäre: ${correctRes}`;
+            fb.style.color = "var(--danger)";
+        }
+
+        // Show Next Button
+        document.getElementById('score').innerText = score;
+        document.getElementById('userAnswer').disabled = true;
+        document.getElementById('nextBtn').style.display = "inline-block";
+        
+        // Update Progress
+        const percent = ((currentIdx + 1) / totalQ) * 100;
+        document.getElementById('progress').style.width = percent + "%";
+    }
+
+    function nextQuestion() {
+        currentIdx++;
+        if (currentIdx < totalQ) {
+            loadQuestion(currentIdx);
+        } else {
+            showEndScreen();
+        }
+    }
+
+    function showEndScreen() {
+        document.getElementById('gameUI').style.display = 'none';
+        document.getElementById('finalScreen').style.display = 'block';
+        document.getElementById('finalScoreDisplay').innerText = score;
+        
+        // Calculate Level
+        const maxScore = totalQ * 10;
+        const percentage = score / maxScore;
+        let level = "Dreisatz-Azubi";
+        if (percentage > 0.4) level = "Geselle";
+        if (percentage > 0.7) level = "Meister";
+        if (percentage > 0.9) level = "Mathematik-Genie";
+
+        document.getElementById('finalLevelDisplay').innerText = level;
+    }
+
+</script>
+</body>
+</html>
