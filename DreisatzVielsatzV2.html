@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<title>Dreisatz & Vielsatz Master</title>
+	<style>
+		:root {
+			--primary: #3498db;
+			--accent: #c0392b;
+			--text: #2c3e50;
+			--bg: #f4f7f6;
+			--success: #27ae60;
+			--error: #e74c3c;
+			--card-border: #dcdcdc;
+		}
+
+		body {
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+			background-color: var(--bg);
+			color: var(--text);
+			margin: 0;
+			padding: 10px;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			min-height: 100vh;
+		}
+
+		.container {
+			width: 100%;
+			max-width: 900px;
+			padding: 5px;
+			box-sizing: border-box;
+			text-align: center;
+		}
+
+		/* --- MENU --- */
+		.menu-screen {
+			background: white;
+			padding: 2rem;
+			border-radius: 15px;
+			box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+			margin-top: 50px;
+			max-width: 500px;
+			margin-left: auto;
+			margin-right: auto;
+		}
+
+		.menu-btn {
+			display: block;
+			width: 100%;
+			padding: 15px;
+			margin: 10px 0;
+			color: white;
+			border: none;
+			border-radius: 8px;
+			font-size: 1.1rem;
+			cursor: pointer;
+			box-shadow: 0 3px 0 rgba(0, 0, 0, 0.1);
+		}
+
+		.menu-btn:active {
+			transform: translateY(2px);
+			box-shadow: none;
+		}
+
+		.btn-prop {
+			background-color: var(--primary);
+		}
+
+		.btn-anti {
+			background-color: #f39c12;
+		}
+
+		.btn-mix {
+			background-color: #8e44ad;
+		}
+
+		/* --- GAME UI --- */
+		.header-bar {
+			display: flex;
+			justify-content: space-between;
+			color: #7f8c8d;
+			font-weight: bold;
+			margin-bottom: 15px;
+			padding: 0 10px;
+		}
+
+		.question-box {
+			background: white;
+			padding: 20px;
+			border-radius: 10px;
+			text-align: left;
+			margin-bottom: 25px;
+			border-left: 5px solid var(--primary);
+			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+			font-size: 1.1rem;
+			line-height: 1.5;
+		}
+
+		/* --- SCHEME CARDS --- */
+		.scheme-container {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			flex-wrap: wrap;
+			gap: 10px;
+			margin-bottom: 30px;
+		}
+
+		.scheme-card {
+			background: white;
+			border: 1px solid var(--card-border);
+			border-radius: 8px;
+			padding: 10px;
+			display: flex;
+			gap: 10px;
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+			min-width: 110px;
+			position: relative;
+		}
+
+		.arrows-col {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			gap: 4px;
+			cursor: pointer;
+			padding: 4px;
+			border-radius: 5px;
+			width: 30px;
+			align-items: center;
+		}
+
+		.arrows-col:hover {
+			background-color: #f0f0f0;
+		}
+
+		.arrows-col.selected {
+			background-color: #e8f6fd;
+			border: 1px solid var(--primary);
+		}
+
+		.arrow-icon {
+			font-size: 1.2rem;
+			color: #bdc3c7;
+			font-weight: bold;
+		}
+
+		.arrows-col.prop .arrow-icon {
+			color: var(--primary);
+		}
+
+		.arrows-col.anti .arrow-icon {
+			color: #f39c12;
+		}
+
+		.values-col {
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			gap: 15px;
+			text-align: right;
+			font-size: 1.1rem;
+			font-weight: 500;
+			flex-grow: 1;
+			padding: 5px 0;
+		}
+
+		.value-item {
+			padding: 2px 6px;
+			border-radius: 12px;
+			transition: all 0.3s;
+			border: 2px solid transparent;
+		}
+
+		.circled {
+			border-color: var(--accent);
+			color: var(--accent);
+			font-weight: bold;
+		}
+
+		.equals-sign {
+			font-size: 2rem;
+			color: #bdc3c7;
+			margin: 0 5px;
+		}
+
+		.x-target {
+			color: var(--accent);
+			font-weight: bold;
+		}
+
+		/* --- FORMULA AREA --- */
+		.formula-area {
+			background: #eef2f3;
+			padding: 20px;
+			border-radius: 12px;
+			margin-bottom: 20px;
+			display: none;
+			border: 1px solid #dcdcdc;
+		}
+
+		.formula-area.visible {
+			display: block;
+			animation: fadeIn 0.3s;
+		}
+
+		@keyframes fadeIn {
+			from {
+				opacity: 0;
+				transform: translateY(10px);
+			}
+
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		.math-row {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 10px;
+			flex-wrap: wrap;
+		}
+
+		.fraction-group {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+
+		.fraction-top {
+			display: flex;
+			align-items: center;
+			gap: 5px;
+			border-bottom: 2px solid #2c3e50;
+			padding-bottom: 5px;
+			margin-bottom: 5px;
+		}
+
+		.fraction-bottom {
+			display: flex;
+			align-items: center;
+			gap: 5px;
+		}
+
+		/* Inputs */
+		.f-input {
+			width: 70px;
+			height: 40px;
+			text-align: center;
+			font-size: 1.1rem;
+			border: 2px solid #bdc3c7;
+			border-radius: 6px;
+			background: #fff;
+		}
+
+		.f-input:focus {
+			border-color: var(--primary);
+			outline: none;
+			background: #fff;
+		}
+
+		.f-input.active {
+			border-color: var(--primary);
+			background: #eaf2f8;
+		}
+
+		.f-input.correct {
+			background: #d4edda;
+			border-color: var(--success);
+			color: var(--success);
+		}
+
+		.f-input.wrong {
+			background: #f8d7da;
+			border-color: var(--error);
+		}
+
+		.op-sign {
+			font-size: 1.2rem;
+			color: #7f8c8d;
+		}
+
+		/* Helper Calc Button */
+		.calc-btn {
+			background: #f1c40f;
+			color: #fff;
+			border: none;
+			padding: 5px 10px;
+			border-radius: 5px;
+			cursor: pointer;
+			font-size: 0.9rem;
+			font-weight: bold;
+			box-shadow: 0 2px 0 #d35400;
+			margin-left: 10px;
+		}
+
+		.calc-btn:active {
+			transform: translateY(2px);
+			box-shadow: none;
+		}
+
+		/* --- KEYPAD --- */
+		.keypad-overlay {
+			position: fixed;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			background: white;
+			box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.15);
+			padding: 15px;
+			border-radius: 20px 20px 0 0;
+			transform: translateY(110%);
+			transition: transform 0.25s;
+			z-index: 100;
+		}
+
+		.keypad-overlay.show {
+			transform: translateY(0);
+		}
+
+		.keypad-grid {
+			display: grid;
+			grid-template-columns: repeat(3, 1fr);
+			gap: 10px;
+			max-width: 400px;
+			margin: 0 auto;
+		}
+
+		.key {
+			padding: 15px;
+			font-size: 1.4rem;
+			background: #f8f9fa;
+			border: 1px solid #e9ecef;
+			border-radius: 10px;
+			cursor: pointer;
+			user-select: none;
+		}
+
+		.key:active {
+			background: #dfe6e9;
+		}
+
+		.key-check {
+			background: var(--success);
+			color: white;
+			border: none;
+			font-weight: bold;
+		}
+
+		.key-del {
+			background: #ffebee;
+			color: var(--error);
+		}
+
+		.key-close {
+			grid-column: span 3;
+			padding: 8px;
+			font-size: 0.9rem;
+			border: none;
+			background: transparent;
+			color: #999;
+		}
+
+		#feedback {
+			min-height: 25px;
+			font-weight: bold;
+			margin-top: 10px;
+			font-size: 1.1rem;
+		}
+
+		.nav-bar {
+			display: flex;
+			justify-content: space-between;
+			margin-top: 30px;
+		}
+
+		.nav-btn {
+			background: white;
+			border: 2px solid #bdc3c7;
+			padding: 10px 20px;
+			border-radius: 25px;
+			color: #7f8c8d;
+			font-weight: bold;
+			cursor: pointer;
+		}
+
+		.nav-btn:hover {
+			background: #ecf0f1;
+		}
+
+		.hidden {
+			display: none !important;
+		}
+	</style>
+</head>
+
+<body>
+
+	<div class="container">
+
+		<div id="menu" class="menu-screen">
+			<h1 style="color: #3498db;">Mathe Meister</h1>
+			<p>Wähle dein Training:</p>
+			<button class="menu-btn btn-prop" onclick="startGame('prop')">Einfacher Dreisatz
+				(Prop.)</button>
+			<button class="menu-btn btn-anti" onclick="startGame('anti')">Einfacher Dreisatz
+				(Anti.)</button>
+			<button class="menu-btn btn-mix" style="background:#27ae60;"
+				onclick="startGame('vielsatz')">Vielsatz (Zusammengesetzt)</button>
+			<button class="menu-btn btn-mix" onclick="startGame('mix')">Alles Gemischt</button>
+		</div>
+
+		<div id="game" class="hidden">
+			<div class="header-bar">
+				<span id="prog-display">Aufgabe 1/10</span>
+				<span id="score-display">Punkte: 0</span>
+			</div>
+
+			<div id="q-text" class="question-box"></div>
+
+			<div id="scheme-container" class="scheme-container"></div>
+
+			<div id="formula-box" class="formula-area">
+				<div style="margin-bottom:10px; color:#777; font-size:0.9rem;">
+					Fülle den Bruch aus:
+				</div>
+
+				<div class="math-row">
+					<span style="font-size: 1.5rem; font-weight:bold;">X = </span>
+
+					<div class="fraction-group">
+						<div id="frac-top" class="fraction-top"></div>
+						<div id="frac-bot" class="fraction-bottom"></div>
+					</div>
+
+					<span style="font-size: 1.5rem; font-weight:bold;"> = </span>
+
+					<input type="text" id="inp-res" class="f-input" placeholder="?"
+						onfocus="openKeypad(this)">
+
+					<button class="calc-btn" onclick="autoCalculate()"
+						title="Ergebnis aus Bruch berechnen">🪄 Berechnen</button>
+				</div>
+			</div>
+
+			<div id="feedback"></div>
+
+			<div class="nav-bar">
+				<button class="nav-btn" onclick="navigate(-1)">← Zurück</button>
+				<button class="nav-btn" onclick="showMenu()">Menü</button>
+				<button class="nav-btn" onclick="navigate(1)">Weiter →</button>
+			</div>
+		</div>
+	</div>
+
+	<div id="keypad" class="keypad-overlay">
+		<button class="key key-close" onclick="closeKeypad()">Tastatur schließen ▾</button>
+		<div class="keypad-grid">
+			<button class="key" onclick="typeKey('7')">7</button>
+			<button class="key" onclick="typeKey('8')">8</button>
+			<button class="key" onclick="typeKey('9')">9</button>
+
+			<button class="key" onclick="typeKey('4')">4</button>
+			<button class="key" onclick="typeKey('5')">5</button>
+			<button class="key" onclick="typeKey('6')">6</button>
+
+			<button class="key" onclick="typeKey('1')">1</button>
+			<button class="key" onclick="typeKey('2')">2</button>
+			<button class="key" onclick="typeKey('3')">3</button>
+
+			<button class="key" onclick="typeKey('.')">.</button>
+			<button class="key" onclick="typeKey('0')">0</button>
+			<button class="key key-del" onclick="typeKey('del')">⌫</button>
+
+			<button class="key key-check" style="grid-column: span 3;"
+				onclick="checkAnswer()">PRÜFEN</button>
+		</div>
+	</div>
+
+	<script>
+		// ==========================================
+		// 1. DATA (Dreisatz + Vielsatz)
+		// ==========================================
+		const questions = [
+			// --- PROP ---
+			{
+				text: "3 kg Äpfel kosten 6 €.<br>Wieviel kosten 5 kg?",
+				cols: [{old: 3, new: 5, unit: 'kg', type: 'prop'}],
+				target: {old: 6, unit: '€'},
+				res: 10
+			},
+			{
+				text: "5 Hefte kosten 10 €.<br>Was kosten 3 Hefte?",
+				cols: [{old: 5, new: 3, unit: 'Hefte', type: 'prop'}],
+				target: {old: 10, unit: '€'},
+				res: 6
+			},
+			{
+				text: "100 km verbrauchen 8 Liter.<br>Wieviel 250 km?",
+				cols: [{old: 100, new: 250, unit: 'km', type: 'prop'}],
+				target: {old: 8, unit: 'L'},
+				res: 20
+			},
+			// --- ANTI ---
+			{
+				text: "3 Arbeiter brauchen 12 h.<br>Wie lange brauchen 6 Arbeiter?",
+				cols: [{old: 3, new: 6, unit: 'Arb.', type: 'anti'}],
+				target: {old: 12, unit: 'h'},
+				res: 6
+			},
+			{
+				text: "Bei 12.5 Tagen arbeiten 20 Maurer.<br>Wie viele Maurer für 10 Tage?",
+				cols: [{old: 12.5, new: 10, unit: 'Tage', type: 'anti'}],
+				target: {old: 20, unit: 'Maurer'},
+				res: 25
+			},
+			// --- TEXT TASKS ---
+			{
+				text: "Wir beziehen 64,8 kg Rehfleisch zum Preis von 524,50 €. Wir verkaufen 16,2 kg weiter.<br>Welchen Preis hat das verkaufte Fleisch?",
+				cols: [{old: 64.8, new: 16.2, unit: 'kg', type: 'prop'}],
+				target: {old: 524.50, unit: '€'},
+				res: 131.13
+			},
+			{
+				text: "12 Geschäfte zahlen 1680 € Werbung. Nur 8 machen mit (Gesamtkosten gleich).<br>Wieviel zahlt jeder?",
+				cols: [{old: 12, new: 8, unit: 'Gesch.', type: 'anti'}],
+				target: {old: 1680, unit: '€'},
+				res: 2520
+			},
+			{
+				text: "65 Kisten kosten 5664 € Versicherung. 34 Kisten werden zerstört.<br>Wie viel € zahlt die Versicherung?",
+				cols: [{old: 65, new: 34, unit: 'Kisten', type: 'prop'}],
+				target: {old: 5664, unit: '€'},
+				res: 2962.71
+			},
+			{
+				text: "6 Angestellte brauchen 12 Tage. Wie lange brauchen 8 Angestellte (6+2)?",
+				cols: [{old: 6, new: 8, unit: 'Ang.', type: 'anti'}],
+				target: {old: 12, unit: 'Tage'},
+				res: 9
+			},
+			{
+				text: "163,8 m² kosten 8.650 €. Was kosten 106,3 m²?",
+				cols: [{old: 163.8, new: 106.3, unit: 'm²', type: 'prop'}],
+				target: {old: 8650, unit: '€'},
+				res: 5613.55
+			},
+			{
+				text: "Geld reicht 31 Tage bei 35 €/Tag. Wie lange bei 28 €/Tag?",
+				cols: [{old: 35, new: 28, unit: '€/Tag', type: 'anti'}],
+				target: {old: 31, unit: 'Tage'},
+				res: 38.75
+			},
+			{
+				text: "Geld reicht 31 Tage bei 35 €/Tag. Wie lange bei 53 €/Tag?",
+				cols: [{old: 35, new: 53, unit: '€/Tag', type: 'anti'}],
+				target: {old: 31, unit: 'Tage'},
+				res: 20.47
+			},
+			{
+				text: "20 Monate sparen bei 45 €. Wie lange bei 60 €?",
+				cols: [{old: 45, new: 60, unit: '€', type: 'anti'}],
+				target: {old: 20, unit: 'Mon.'},
+				res: 15
+			},
+			{
+				text: "Um nach 12 Monaten zu kaufen (statt 20), wie viel muss man sparen (statt 45 €)?",
+				cols: [{old: 20, new: 12, unit: 'Mon.', type: 'anti'}],
+				target: {old: 45, unit: '€'},
+				res: 75
+			},
+			{
+				text: "2,20 m Stahl wiegen 134,86 kg. Wie viel wiegen 4,75 m?",
+				cols: [{old: 2.20, new: 4.75, unit: 'm', type: 'prop'}],
+				target: {old: 134.86, unit: 'kg'},
+				res: 291.18
+			},
+			{
+				text: "450 km verbrauchen 36 Liter. Wie viel verbrauchen 100 km?",
+				cols: [{old: 450, new: 100, unit: 'km', type: 'prop'}],
+				target: {old: 36, unit: 'L'},
+				res: 8
+			},
+			{
+				text: "6 Zimmerer brauchen 15 Stunden. 4 Zimmerer brauchen wie lange?",
+				cols: [{old: 6, new: 4, unit: 'Zimm.', type: 'anti'}],
+				target: {old: 15, unit: 'Std.'},
+				res: 22.5
+			},
+
+			// --- VIELSATZ ---
+			{
+				text: "4.500 € bringen in 9 Monaten 135 € Zinsen.<br>Wie viel Zinsen bringen 5.300 € in 7 Monaten?",
+				cols: [
+					{old: 4500, new: 5300, unit: '€', type: 'prop'},
+					{old: 9, new: 7, unit: 'Mon.', type: 'prop'}
+				],
+				target: {old: 135, unit: '€'},
+				res: 123.67
+			},
+			{
+				text: "12 Arbeiter verlegen in 4 Tagen 600 m Kabel.<br>Wie viel m verlegen 8 Arbeiter in 3 Tagen?",
+				cols: [
+					{old: 12, new: 8, unit: 'Arb.', type: 'prop'},
+					{old: 4, new: 3, unit: 'Tage', type: 'prop'}
+				],
+				target: {old: 600, unit: 'm'},
+				res: 300
+			},
+			{
+				text: "1000 kg Futter reichen 12 Kühen für 15 Tage.<br>Wie lange reichen 800 kg für 18 Kühe?",
+				cols: [
+					{old: 1000, new: 800, unit: 'kg', type: 'prop'},
+					{old: 12, new: 18, unit: 'Kühe', type: 'anti'}
+				],
+				target: {old: 15, unit: 'Tage'},
+				res: 8
+			},
+			{
+				text: "3 Pumpen füllen in 5 Stunden ein Becken von 400 m³.<br>Wie viele m³ schaffen 4 Pumpen in 2 Stunden?",
+				cols: [
+					{old: 3, new: 4, unit: 'Pumpen', type: 'prop'},
+					{old: 5, new: 2, unit: 'Std.', type: 'prop'}
+				],
+				target: {old: 400, unit: 'm³'},
+				res: 213.33
+			},
+			{
+				text: "5 LKW fahren in 6 Tagen 400 Tonnen.<br>Wie viele Tonnen fahren 3 LKW in 8 Tagen?",
+				cols: [
+					{old: 5, new: 3, unit: 'LKW', type: 'prop'},
+					{old: 6, new: 8, unit: 'Tage', type: 'prop'}
+				],
+				target: {old: 400, unit: 't'},
+				res: 320
+			},
+			{
+				text: "2 Drucker drucken in 30 Minuten 500 Seiten.<br>Wie viele Seiten drucken 5 Drucker in 10 Minuten?",
+				cols: [
+					{old: 2, new: 5, unit: 'Dr.', type: 'prop'},
+					{old: 30, new: 10, unit: 'Min.', type: 'prop'}
+				],
+				target: {old: 500, unit: 'Seiten'},
+				res: 416.66
+			},
+			{
+				text: "8 Helfer ernten ein Feld von 4 Hektar in 6 Stunden.<br>Wie lange brauchen 12 Helfer für 6 Hektar?",
+				cols: [
+					{old: 8, new: 12, unit: 'Helf.', type: 'anti'},
+					{old: 4, new: 6, unit: 'ha', type: 'prop'}
+				],
+				target: {old: 6, unit: 'Std.'},
+				res: 6
+			},
+			{
+				text: "4 Personen zahlen für 7 Tage 1400 €.<br>Wieviel zahlen 6 Personen für 5 Tage?",
+				cols: [
+					{old: 4, new: 6, unit: 'Pers.', type: 'prop'},
+					{old: 7, new: 5, unit: 'Tage', type: 'prop'}
+				],
+				target: {old: 1400, unit: '€'},
+				res: 1500
+			},
+			{
+				text: "5 Maschinen verbrauchen in 8 Stunden 200 kWh.<br>Wieviel verbrauchen 8 Maschinen in 6 Stunden?",
+				cols: [
+					{old: 5, new: 8, unit: 'Masch.', type: 'prop'},
+					{old: 8, new: 6, unit: 'Std.', type: 'prop'}
+				],
+				target: {old: 200, unit: 'kWh'},
+				res: 240
+			},
+			{
+				text: "6 Maurer bauen eine 20m Mauer in 3 Tagen.<br>Wie lange brauchen 4 Maurer für eine 30m Mauer?",
+				cols: [
+					{old: 6, new: 4, unit: 'Maur.', type: 'anti'},
+					{old: 20, new: 30, unit: 'm', type: 'prop'}
+				],
+				target: {old: 3, unit: 'Tage'},
+				res: 6.75
+			}
+		];
+
+		// ==========================================
+		// 2. ENGINE
+		// ==========================================
+		let activeQuestions = [];
+		let curIdx = 0;
+		let userState = {};
+		let activeInput = null;
+
+		const els = {
+			menu: document.getElementById('menu'),
+			game: document.getElementById('game'),
+			qText: document.getElementById('q-text'),
+			schemeContainer: document.getElementById('scheme-container'),
+			formulaBox: document.getElementById('formula-box'),
+			fracTop: document.getElementById('frac-top'),
+			fracBot: document.getElementById('frac-bot'),
+			resInput: document.getElementById('inp-res'),
+			keypad: document.getElementById('keypad'),
+			feedback: document.getElementById('feedback'),
+			prog: document.getElementById('prog-display'),
+			score: document.getElementById('score-display')
+		};
+
+		function startGame(mode) {
+			if (mode === 'mix') activeQuestions = [...questions];
+			else if (mode === 'vielsatz') activeQuestions = questions.filter(q => q.cols.length > 1);
+			else activeQuestions = questions.filter(q => q.cols.length === 1 && q.cols[0].type === mode);
+
+			if (activeQuestions.length === 0) activeQuestions = [...questions];
+			activeQuestions.sort(() => Math.random() - 0.5);
+
+			curIdx = 0;
+			userState = {};
+
+			els.menu.classList.add('hidden');
+			els.game.classList.remove('hidden');
+			loadQuestion();
+		}
+
+		function showMenu() {
+			els.game.classList.add('hidden');
+			els.menu.classList.remove('hidden');
+			closeKeypad();
+		}
+
+		function loadQuestion() {
+			const q = activeQuestions[curIdx];
+			if (!userState[curIdx]) userState[curIdx] = {
+				arrows: new Array(q.cols.length).fill(null),
+				inputsTop: new Array(q.cols.length + 1).fill(""),
+				inputsBot: new Array(q.cols.length).fill(""),
+				res: "",
+				solved: false
+			};
+
+			const s = userState[curIdx];
+			els.qText.innerHTML = q.text;
+			els.prog.textContent = `Aufgabe ${curIdx + 1}/${activeQuestions.length}`;
+			updateScore();
+			els.feedback.innerHTML = "";
+
+			renderScheme(q, s);
+			renderFormula(q, s);
+
+			if (s.arrows.some(a => a !== null)) els.formulaBox.classList.add('visible');
+			else els.formulaBox.classList.remove('visible');
+
+			if (s.solved) markCorrect();
+			else resetValidationStyles();
+		}
+
+		function renderScheme(q, s) {
+			els.schemeContainer.innerHTML = "";
+			q.cols.forEach((col, idx) => {
+				const card = document.createElement('div');
+				card.className = "scheme-card";
+
+				const arrowBox = document.createElement('div');
+				arrowBox.className = "arrows-col";
+				if (s.arrows[idx]) arrowBox.classList.add('selected', s.arrows[idx]);
+
+				let botArr = s.arrows[idx] === 'anti' ? "↓" : (s.arrows[idx] === 'prop' ? "↑" : "↓");
+				arrowBox.innerHTML = `<span class="arrow-icon">↑</span><span class="arrow-icon" style="font-size:1.4rem">${botArr}</span>`;
+				arrowBox.onclick = () => {if (!s.solved) toggleArrow(idx);};
+
+				const valBox = document.createElement('div');
+				valBox.className = "values-col";
+				let cT = "value-item", cB = "value-item";
+				if (s.arrows[idx] === 'prop') cT += " circled";
+				if (s.arrows[idx] === 'anti') cB += " circled";
+
+				valBox.innerHTML = `<span class="${cT}">${col.old} ${col.unit}</span><span class="${cB}">${col.new} ${col.unit}</span>`;
+				card.appendChild(arrowBox);
+				card.appendChild(valBox);
+				els.schemeContainer.appendChild(card);
+			});
+
+			const eq = document.createElement('div');
+			eq.className = "equals-sign";
+			eq.innerHTML = "=";
+			els.schemeContainer.appendChild(eq);
+
+			const tCard = document.createElement('div');
+			tCard.className = "scheme-card";
+			tCard.innerHTML = `<div class="values-col" style="justify-content:center; text-align:center;"><span>${q.target.old} ${q.target.unit}</span><span class="x-target">X ${q.target.unit}</span></div>`;
+			els.schemeContainer.appendChild(tCard);
+		}
+
+		function toggleArrow(colIdx) {
+			const s = userState[curIdx];
+			s.arrows[colIdx] = (!s.arrows[colIdx] || s.arrows[colIdx] === 'anti') ? 'prop' : 'anti';
+			loadQuestion();
+		}
+
+		function renderFormula(q, s) {
+			els.fracTop.innerHTML = "";
+			els.fracBot.innerHTML = "";
+			els.resInput.value = s.res;
+
+			// Top Inputs
+			for (let i = 0; i <= q.cols.length; i++) {
+				if (i > 0) appendOp(els.fracTop);
+				const inp = createInput(s.inputsTop[i], (val) => s.inputsTop[i] = val);
+				els.fracTop.appendChild(inp);
+			}
+			// Bot Inputs
+			for (let i = 0; i < q.cols.length; i++) {
+				if (i > 0) appendOp(els.fracBot);
+				const inp = createInput(s.inputsBot[i], (val) => s.inputsBot[i] = val);
+				els.fracBot.appendChild(inp);
+			}
+		}
+
+		function appendOp(parent) {
+			const span = document.createElement('span');
+			span.className = "op-sign";
+			span.innerHTML = " • ";
+			parent.appendChild(span);
+		}
+
+		function createInput(val, saveFn) {
+			const inp = document.createElement('input');
+			inp.type = "text";
+			inp.className = "f-input";
+			inp.value = val;
+			// Allows physical keyboard typing
+			inp.oninput = (e) => saveFn(e.target.value);
+			// Allows on-screen keypad on click/focus
+			inp.onfocus = function () {
+				if (!userState[curIdx].solved) openKeypad(this, saveFn);
+			};
+			return inp;
+		}
+
+		// ==========================================
+		// 3. LOGIC & CALCULATION
+		// ==========================================
+
+		// Auto Calculate Function
+		function autoCalculate() {
+			if (userState[curIdx].solved) return;
+			const s = userState[curIdx];
+
+			// Helper to parse localized floats
+			const parseVal = (v) => {
+				if (!v) return 0;
+				return parseFloat(v.toString().replace(',', '.'));
+			};
+
+			const topVals = s.inputsTop.map(parseVal).filter(n => !isNaN(n) && n !== 0);
+			const botVals = s.inputsBot.map(parseVal).filter(n => !isNaN(n) && n !== 0);
+
+			if (topVals.length === 0 || botVals.length === 0) {
+				feedback("Bitte fülle zuerst den Bruch aus.", false);
+				return;
+			}
+
+			const prodTop = topVals.reduce((a, b) => a * b, 1);
+			const prodBot = botVals.reduce((a, b) => a * b, 1);
+
+			const res = prodTop / prodBot;
+
+			// Format to max 2 decimals if needed
+			const rounded = Math.round(res * 100) / 100;
+
+			s.res = rounded;
+			els.resInput.value = rounded;
+			feedback("Ergebnis berechnet! Jetzt prüfen.", true);
+		}
+
+		function checkAnswer() {
+			const q = activeQuestions[curIdx];
+			const s = userState[curIdx];
+
+			// Check Arrows
+			for (let i = 0; i < q.cols.length; i++) {
+				if (s.arrows[i] !== q.cols[i].type) {
+					feedback("Überprüfe die Pfeile!", false);
+					return;
+				}
+			}
+
+			// Check Fraction Logic
+			let requiredTop = [q.target.old];
+			let requiredBot = [];
+
+			q.cols.forEach((col, idx) => {
+				if (col.type === 'prop') {
+					requiredTop.push(col.new);
+					requiredBot.push(col.old);
+				} else {
+					requiredTop.push(col.old);
+					requiredBot.push(col.new);
+				}
+			});
+
+			const userTop = s.inputsTop.map(v => parseFloat(v.toString().replace(',', '.'))).filter(n => !isNaN(n));
+			const userBot = s.inputsBot.map(v => parseFloat(v.toString().replace(',', '.'))).filter(n => !isNaN(n));
+
+			if (userTop.length !== requiredTop.length || userBot.length !== requiredBot.length) {
+				feedback("Bruch ist unvollständig.", false);
+				return;
+			}
+
+			if (!arraysMatch(userTop, requiredTop) || !arraysMatch(userBot, requiredBot)) {
+				feedback("Zahlen im Bruch falsch gesetzt.", false);
+				return;
+			}
+
+			// Check Result
+			const userRes = parseFloat(s.res.toString().replace(',', '.'));
+			if (Math.abs(userRes - q.res) < 0.5) {
+				feedback("Richtig! Super!", true);
+				s.solved = true;
+				markCorrect();
+				updateScore();
+				closeKeypad();
+			} else {
+				feedback(`Bruch stimmt, aber Ergebnis ist falsch. (~${q.res})`, false);
+			}
+		}
+
+		function arraysMatch(arr1, arr2) {
+			const s1 = [...arr1].sort((a, b) => a - b);
+			const s2 = [...arr2].sort((a, b) => a - b);
+			for (let i = 0; i < s1.length; i++) {
+				if (Math.abs(s1[i] - s2[i]) > 0.01) return false;
+			}
+			return true;
+		}
+
+		// ==========================================
+		// 4. HELPERS
+		// ==========================================
+		function feedback(msg, isSuccess) {
+			els.feedback.style.color = isSuccess ? "var(--success)" : "var(--error)";
+			els.feedback.textContent = msg;
+		}
+
+		function markCorrect() {
+			document.querySelectorAll('.f-input').forEach(el => el.classList.add('correct'));
+		}
+
+		function resetValidationStyles() {
+			document.querySelectorAll('.f-input').forEach(el => el.classList.remove('correct', 'wrong'));
+		}
+
+		function updateScore() {
+			let sc = 0;
+			Object.values(userState).forEach(st => {if (st.solved) sc++;});
+			els.score.textContent = `Punkte: ${sc}`;
+		}
+
+		function navigate(dir) {
+			const n = curIdx + dir;
+			if (n >= 0 && n < activeQuestions.length) {
+				curIdx = n;
+				loadQuestion();
+			}
+		}
+
+		// ==========================================
+		// 5. KEYPAD
+		// ==========================================
+		let currentSaveFn = null;
+
+		function openKeypad(inputEl, saveFn) {
+			if (userState[curIdx].solved) return;
+
+			document.querySelectorAll('.f-input').forEach(e => e.classList.remove('active'));
+			inputEl.classList.add('active');
+
+			activeInput = inputEl;
+			// If focusing manually (e.g. result field), we might not have a saveFn passed, 
+			// so we default to updating res if ID matches
+			if (saveFn) currentSaveFn = saveFn;
+			else if (inputEl.id === 'inp-res') currentSaveFn = (val) => userState[curIdx].res = val;
+
+			els.keypad.classList.add('show');
+		}
+
+		function closeKeypad() {
+			els.keypad.classList.remove('show');
+			if (activeInput) activeInput.classList.remove('active');
+			activeInput = null;
+		}
+
+		function typeKey(val) {
+			if (!activeInput) return;
+
+			if (val === 'del') {
+				activeInput.value = activeInput.value.slice(0, -1);
+			} else {
+				if (val === '.' && activeInput.value.includes('.')) return;
+				activeInput.value += val;
+			}
+
+			if (currentSaveFn) currentSaveFn(activeInput.value);
+		}
+	</script>
+</body>
+
+</html>
